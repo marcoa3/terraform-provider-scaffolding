@@ -45,11 +45,17 @@ jobs:
         uses: goreleaser/goreleaser-action@v3.0.0
         with:
           version: latest
-          args: release --rm-dist
+          args: release
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: files
+          path: dist/*
   publish-to-private-registry:
     needs: goreleaser
     runs-on: ubuntu-latest
@@ -63,6 +69,10 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
+      - name: List files & dist
+        run: |
+          echo "list files $(ls -al files)"
+          echo "list dist $(ls -al dist)"
       - name: Create provider version and store output
         run: |
           curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -o links.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
