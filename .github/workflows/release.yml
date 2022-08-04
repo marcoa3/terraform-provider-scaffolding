@@ -64,7 +64,7 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
       - name: Create provider version and store output
         run: |
-          curl --header "Authorization: Bearer $TF_API_TOKEN" --header "Content-Type: application/vnd.api+json" --request POST --data {"data":{"type":"registry-provider-versions","attributes":{"version":"${{ env.RELEASE_VERSION }}","key-id":"marcus.ojerinde-ardalla@beautypie.com","protocols":["5.0"]}}} https://app.terraform.io/api/v2/organizations/hashicorp/registry-providers/private/hashicorp/aws/versions > links.json
+          curl --header "Authorization: Bearer $TF_API_TOKEN" --header "Content-Type: application/json" --request POST --data '{"data":{"type":"registry-provider-versions","attributes":{"version":"${{ env.RELEASE_VERSION }}","key-id":"marcus.ojerinde-ardalla@beautypie.com","protocols":["5.0"]}}}' https://app.terraform.io/api/v2/organizations/hashicorp/registry-providers/private/hashicorp/aws/versions > links.json
       - name: Parse shasum links as env variables
         run: |
           echo "SHASUM_UPLOAD=$(jq '.data.links.\"shasums-upload\"' links.json)" >> $GITHUB_ENV
@@ -88,7 +88,7 @@ jobs:
           echo ${{ env.CHECKSUM }}
       - name: Create provider platform and store output
         run: |
-          curl --header "Authorization: Bearer $TF_API_TOKEN" --header "Content-Type: application/vnd.api+json" --request POST --data {"data":{"type":"registry-provider-version-platforms","attributes":{"os":"linux","arch":"amd64","shasum":"${{ env.CHECKSUM }}","filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"}}} https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions/${{ env.RELEASE_VERSION }}/platforms > provider-platform.json
+          curl --header "Authorization: Bearer $TF_API_TOKEN" --header "Content-Type: application/json" --request POST --data '{"data":{"type":"registry-provider-version-platforms","attributes":{"os":"linux","arch":"amd64","shasum":"${{ env.CHECKSUM }}","filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"}}}' https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions/${{ env.RELEASE_VERSION }}/platforms > provider-platform.json
       - name: Parse provider-binary-upload link as env variables
         run: |
           echo "BINARY_UPLOAD=$(jq '.data.links.\"provider-binary-upload\"' provider-platform.json)" >> $GITHUB_ENV
