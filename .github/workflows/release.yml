@@ -9,7 +9,7 @@
 # You will need to pass the `--batch` flag to `gpg` in your signing step 
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
-# Added additional job publish-to-private-registry
+# Added additional job publish-to-private-registry.
 name: release
 on:
   push:
@@ -52,6 +52,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   publish-to-private-registry:
+    needs: goreleaser
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
