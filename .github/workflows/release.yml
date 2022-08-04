@@ -64,12 +64,12 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
       - name: Create provider version and store output
         run: |
-          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer $TF_TOKEN" --data-binary @- <<DATA
+          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
           {
             "data": {
               "type": "registry-provider-versions",
               "attributes": {
-                "version": "${{ env.RELEASE_VERSION }}",
+                "version": "${{ env.RELEASE_VERSION:1 }}",
                 "key-id": "marcus.ojerinde-ardalla@beautypie.com",
                 "protocols": ["5.0"]
               }
@@ -87,18 +87,18 @@ jobs:
           echo ${{ env.SHASUMS_SIG_UPLOAD }}
       - name: Upload SHA256SUMS & SIG to registry
         run: |
-          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
-          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_SHA256SUMS.sigs ${{ env.SHASUMS_SIG_UPLOAD }}
+          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION:1 }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
+          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION:1 }}_SHA256SUMS.sigs ${{ env.SHASUMS_SIG_UPLOAD }}
       - name: Create release SHASUM
         run: |
-          echo CHECKSUM="$(shasum dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo CHECKSUM="$(shasum dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION:1 }}_linux_amd64.zip.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
       - name: Test SHASUM from file environment variable
         run: |
           echo $CHECKSUM
           echo ${{ env.CHECKSUM }}
       - name: Create provider platform and store output
         run: |
-          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions/${{ env.RELEASE_VERSION }}/platforms -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer $TF_TOKEN" --data-binary @- <<DATA
+          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions/${{ env.RELEASE_VERSION:1 }}/platforms -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
           {
             "data":{
                 "type":"registry-provider-version-platforms",
@@ -106,7 +106,7 @@ jobs:
                   "os":"linux",
                   "arch":"amd64",
                   "shasum":"${{ env.CHECKSUM }}",
-                  "filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
+                  "filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION:1 }}_linux_amd64.zip"
                 }
             }
           } DATA > provider-platform.json
@@ -119,5 +119,5 @@ jobs:
           echo ${{ env.BINARY_UPLOAD }}
       - name: Upload platform binary to registry
         run: |
-          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
+          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION:1 }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
 
