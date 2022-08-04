@@ -1,0 +1,10 @@
+{
+  "data": {
+    "type": "registry-provider-versions",
+    "attributes": {
+      "version": "1.0.1",
+      "key-id": "marcus.ojerinde-ardalla@beautypie.com",
+      "protocols": ["5.0"]
+    }
+  }
+}
