@@ -74,12 +74,11 @@ jobs:
                 "protocols": ["5.0"]
               }
             }
-          }
-          DATA > links.json
+          } DATA > links.json
       - name: Parse shasum links as env variables
         run: |
-          echo "SHASUM_UPLOAD=$(jq '.data.links.\"shasums-upload\"' links.json)" >> $GITHUB_ENV
-          echo "SHASUMS_SIG_UPLOAD=$(jq '.data.links.\"shasums-sig-upload\"' links.json)" >> $GITHUB_ENV
+          echo "SHASUM_UPLOAD=$(jq '.data.links."shasums-upload"' links.json)" >> $GITHUB_ENV
+          echo "SHASUMS_SIG_UPLOAD=$(jq '.data.links."shasums-sig-upload"' links.json)" >> $GITHUB_ENV
       - name: Test SHASUM links environment variable
         run: |
           echo $SHASUM_UPLOAD
@@ -110,11 +109,10 @@ jobs:
                   "filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
                 }
             }
-          }
-          DATA > provider-platform.json
+          } DATA > provider-platform.json
       - name: Parse provider-binary-upload link as env variables
         run: |
-          echo "BINARY_UPLOAD=$(jq '.data.links.\"provider-binary-upload\"' provider-platform.json)" >> $GITHUB_ENV
+          echo "BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' provider-platform.json)" >> $GITHUB_ENV
       - name: Test BINARY_UPLOAD from file environment variable
         run: |
           echo $BINARY_UPLOAD
