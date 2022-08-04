@@ -64,7 +64,7 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
       - name: Create provider version and store output
         run: |
-          response = $(curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
+          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -o links.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
           {
             "data": {
               "type": "registry-provider-versions",
@@ -75,8 +75,7 @@ jobs:
               }
             }
           }
-          DATA)
-          echo "$response" > links.json
+          DATA
       - name: Parse shasum links as env variables
         run: |
           echo "SHASUM_UPLOAD=$(jq '.data.links."shasums-upload"' links.json)" >> $GITHUB_ENV
