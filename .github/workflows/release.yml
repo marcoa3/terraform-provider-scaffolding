@@ -75,7 +75,7 @@ jobs:
               }
             }
           }
-          DATA > links.json
+DATA > links.json
       - name: Parse shasum links as env variables
         run: |
           echo "SHASUM_UPLOAD=$(jq '.data.links."shasums-upload"' links.json)" >> $GITHUB_ENV
