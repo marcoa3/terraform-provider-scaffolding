@@ -104,7 +104,7 @@ jobs:
       - name: Upload SHA256SUMS & SIG to registry
         run: |
           curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
-          curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_SHA256SUMS.sigs ${{ env.SHASUMS_SIG_UPLOAD }}
+          curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_SHA256SUMS.sig ${{ env.SHASUMS_SIG_UPLOAD }}
       - name: Create release SHASUM
         run: |
           echo CHECKSUM="$(shasum release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
