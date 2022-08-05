@@ -122,7 +122,7 @@ jobs:
                   "os":"linux",
                   "arch":"amd64",
                   "shasum":"${{ env.CHECKSUM }}",
-                  "filename":"dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
+                  "filename":"release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
                 }
             }
           }
@@ -136,5 +136,5 @@ jobs:
           echo ${{ env.BINARY_UPLOAD }}
       - name: Upload platform binary to registry
         run: |
-          curl -T dist/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
 
