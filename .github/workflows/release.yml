@@ -134,7 +134,7 @@ jobs:
         run: |
           echo $BINARY_UPLOAD
           echo ${{ env.BINARY_UPLOAD }}
-      # - name: Upload platform binary to registry
-      #   run: |
-      #     curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
+      - name: Upload platform binary to registry
+        run: |
+          curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
 
