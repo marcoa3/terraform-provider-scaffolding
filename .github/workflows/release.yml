@@ -122,7 +122,7 @@ jobs:
                   "os":"linux",
                   "arch":"amd64",
                   "shasum":"${{ env.CHECKSUM }}",
-                  "filename":"release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
+                  "filename":"terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
                 }
             }
           }
