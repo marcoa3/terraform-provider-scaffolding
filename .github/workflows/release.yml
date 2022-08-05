@@ -85,7 +85,7 @@ jobs:
               "type": "registry-provider-versions",
               "attributes": {
                 "version": "${{ env.RELEASE_VERSION }}",
-                "key-id": "marcus.ojerinde-ardalla@beautypie.com",
+                "key-id": "80A1BE37D6171B4D",
                 "protocols": ["5.0"]
               }
             }
