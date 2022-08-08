@@ -79,7 +79,7 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
       - name: Create provider version and store output
         run: |
-          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -o links.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
+          curl -X POST https://app.terraform.io/api/v2/organizations/beautypie/registry-providers/private/beautypie/scaffolding/versions -o shasum-links.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
           {
             "data": {
               "type": "registry-provider-versions",
@@ -93,9 +93,9 @@ jobs:
           DATA
       - name: Parse shasum links as env variables
         run: |
-          echo "SHASUM_UPLOAD=$(jq '.data.links."shasums-upload"' links.json)" >> $GITHUB_ENV
-          echo "SHASUMS_SIG_UPLOAD=$(jq '.data.links."shasums-sig-upload"' links.json)" >> $GITHUB_ENV
-      - name: Test SHASUM links environment variable
+          echo "SHASUM_UPLOAD=$(jq '.data.links."shasums-upload"' shasum-links.json)" >> $GITHUB_ENV
+          echo "SHASUMS_SIG_UPLOAD=$(jq '.data.links."shasums-sig-upload"' shasum-links.json)" >> $GITHUB_ENV
+      - name: Test SHASUM UPLOAD links environment variable
         run: |
           echo $SHASUM_UPLOAD
           echo ${{ env.SHASUM_UPLOAD }}
@@ -108,7 +108,7 @@ jobs:
       - name: Create release SHASUM
         run: |
           echo CHECKSUM="$(shasum release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-      - name: Test SHASUM from file environment variable
+      - name: Test release SHASUM environment variable
         run: |
           echo $CHECKSUM
           echo ${{ env.CHECKSUM }}
@@ -127,7 +127,7 @@ jobs:
             }
           }
           DATA
-      - name: Parse provider-binary-upload link as env variables
+      - name: Parse provider-binary-upload link as env variable
         run: |
           echo "BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' provider-platform.json)" >> $GITHUB_ENV
       - name: Test BINARY_UPLOAD from file environment variable
@@ -137,4 +137,9 @@ jobs:
       - name: Upload platform binary to registry
         run: |
           curl -T release-files/terraform-provider-scaffolding_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.BINARY_UPLOAD }}
+      # delete-artifact
+      - name: Remove downloaded assets
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: my-artifact
 
