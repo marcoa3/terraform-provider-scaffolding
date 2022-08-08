@@ -14,7 +14,7 @@ name: release
 on:
   push:
     branches:
-      - master
+      - main
 env:
   PROVIDER_NAME: scaffolding
   ORGANISATION_NAME: beautypie
