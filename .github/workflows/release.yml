@@ -104,24 +104,24 @@ jobs:
           echo "SHASUMS_SIG_UPLOAD: $SHASUMS_SIG_UPLOAD"
       - name: Upload SHA256SUMS & SIG to registry
         run: |
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS.sig ${{ env.SHASUMS_SIG_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS.sig ${{ env.SHASUMS_SIG_UPLOAD }}
       - name: Create release SHASUM
         run: |
-          echo LINUX_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo DARWIN_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo DARWIN_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo LINUX_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo LINUX_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo LINUX_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo LINUX_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo DARWIN_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo DARWIN_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo FREEBSD_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo FREEBSD_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo FREEBSD_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo FREEBSD_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo WINDOWS_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo WINDOWS_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo WINDOWS_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo WINDOWS_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
       - name: Test release SHASUM environment variable
         run: |
           echo "LINUX_AMD64_CHECKSUM: $LINUX_AMD64_CHECKSUM"
@@ -148,7 +148,7 @@ jobs:
                   "os":"linux",
                   "arch":"amd64",
                   "shasum":"${{ env.LINUX_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
                 }
             }
           }
@@ -161,7 +161,7 @@ jobs:
                   "os":"linux",
                   "arch":"arm",
                   "shasum":"${{ env.LINUX_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip"
                 }
             }
           }
@@ -174,7 +174,7 @@ jobs:
                   "os":"linux",
                   "arch":"arm64",
                   "shasum":"${{ env.LINUX_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip"
                 }
             }
           }
@@ -187,7 +187,7 @@ jobs:
                   "os":"linux",
                   "arch":"386",
                   "shasum":"${{ env.LINUX_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip"
                 }
             }
           }
@@ -200,7 +200,7 @@ jobs:
                   "os":"darwin",
                   "arch":"amd64",
                   "shasum":"${{ env.DARWIN_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip"
                 }
             }
           }
@@ -213,7 +213,7 @@ jobs:
                   "os":"darwin",
                   "arch":"arm64",
                   "shasum":"${{ env.DARWIN_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip"
                 }
             }
           }
@@ -226,7 +226,7 @@ jobs:
                   "os":"freebsd",
                   "arch":"amd64",
                   "shasum":"${{ env.FREEBSD_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip"
                 }
             }
           }
@@ -239,7 +239,7 @@ jobs:
                   "os":"freebsd",
                   "arch":"arm",
                   "shasum":"${{ env.FREEBSD_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip"
                 }
             }
           }
@@ -252,7 +252,7 @@ jobs:
                   "os":"freebsd",
                   "arch":"arm64",
                   "shasum":"${{ env.FREEBSD_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip"
                 }
             }
           }
@@ -265,7 +265,7 @@ jobs:
                   "os":"freebsd",
                   "arch":"386",
                   "shasum":"${{ env.FREEBSD_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip"
                 }
             }
           }
@@ -278,7 +278,7 @@ jobs:
                   "os":"windows",
                   "arch":"amd64",
                   "shasum":"${{ env.WINDOWS_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip"
                 }
             }
           }
@@ -291,7 +291,7 @@ jobs:
                   "os":"windows",
                   "arch":"arm",
                   "shasum":"${{ env.WINDOWS_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip"
                 }
             }
           }
@@ -304,7 +304,7 @@ jobs:
                   "os":"windows",
                   "arch":"arm64",
                   "shasum":"${{ env.WINDOWS_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip"
                 }
             }
           }
@@ -317,7 +317,7 @@ jobs:
                   "os":"windows",
                   "arch":"386",
                   "shasum":"${{ env.WINDOWS_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip"
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip"
                 }
             }
           }
@@ -356,20 +356,20 @@ jobs:
           echo "WINDOWS_386_BINARY_UPLOAD: $WINDOWS_386_BINARY_UPLOAD"
       - name: Upload platform binary to registry
         run: |
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.LINUX_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip ${{ env.LINUX_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip ${{ env.LINUX_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip ${{ env.LINUX_386_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip ${{ env.DARWIN_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip ${{ env.DARWIN_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip ${{ env.FREEBSD_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip ${{ env.FREEBSD_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip ${{ env.FREEBSD_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip ${{ env.FREEBSD_386_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip ${{ env.WINDOWS_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip ${{ env.WINDOWS_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip ${{ env.WINDOWS_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip ${{ env.WINDOWS_386_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.LINUX_AMD64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip ${{ env.LINUX_ARM_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip ${{ env.LINUX_ARM64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip ${{ env.LINUX_386_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip ${{ env.DARWIN_AMD64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip ${{ env.DARWIN_ARM64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip ${{ env.FREEBSD_AMD64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip ${{ env.FREEBSD_ARM_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip ${{ env.FREEBSD_ARM64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip ${{ env.FREEBSD_386_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip ${{ env.WINDOWS_AMD64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip ${{ env.WINDOWS_ARM_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip ${{ env.WINDOWS_ARM64_BINARY_UPLOAD }}
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip ${{ env.WINDOWS_386_BINARY_UPLOAD }}
       # delete-artifact
       - name: Remove downloaded assets
         uses: geekyeggo/delete-artifact@v1
