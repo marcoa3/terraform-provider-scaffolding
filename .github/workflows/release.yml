@@ -13,8 +13,8 @@
 name: release
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
 env:
   PROVIDER_NAME: scaffolding
   ORGANISATION_NAME: beautypie
@@ -23,7 +23,19 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - id: release
+        uses: rymndhng/release-on-push-action@master
+        with:
+          bump_version_scheme: minor
+          tag_prefix: v
+          
+      - name: Check Output Parameters
+        run: |
+          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
+          echo "Got release version ${{ steps.release.outputs.version }}"
       -
         name: Checkout
         uses: actions/checkout@v3
