@@ -14,7 +14,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - '**'
 env:
   PROVIDER_NAME: scaffolding
   ORGANISATION_NAME: beautypie
@@ -26,13 +26,10 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Print Github Secret
-        run: |
-          echo ${{ env.GITHUB_TOKEN }}
       - id: release
         uses: rymndhng/release-on-push-action@master
         with:
-          bump_version_scheme: minor
+          bump_version_scheme: patch
           tag_prefix: v
           
       - name: Check Output Parameters
@@ -57,7 +54,7 @@ jobs:
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v3.0.0
@@ -74,7 +71,7 @@ jobs:
         with:
           name: files
           path: dist/*
-  publish-to-private-registry:
+  prepare-private-registry:
     needs: goreleaser
     runs-on: ubuntu-latest
     steps:
@@ -87,10 +84,13 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: release-files
-      - id: latest-release
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: ${{ github.repository }}
+      - name: Get latest release of Repository
+        uses: rez0n/actions-github-release@main
+        id: latest-release
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "marcoa3/terraform-provider-scaffolding"
+          type: "stable"
       - name: Set release version in env
         run: |
           RELEASE_VERSION=${{ steps.latest-release.outputs.release }}
@@ -107,7 +107,7 @@ jobs:
               "type": "registry-provider-versions",
               "attributes": {
                 "version": "${{ env.RELEASE_VERSION }}",
-                "key-id": "80A1BE37D6171B4D",
+                "key-id": "AC296C6E21CA8F32",
                 "protocols": ["5.0"]
               }
             }
@@ -125,273 +125,73 @@ jobs:
         run: |
           curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS ${{ env.SHASUM_UPLOAD }}
           curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_SHA256SUMS.sig ${{ env.SHASUMS_SIG_UPLOAD }}
-      - name: Create release SHASUM
+  publish-to-private-registry:
+    needs: prepare-private-registry
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform_os_name: [linux,windows,freebsd,darwin]
+        platform_arch_name: [arm,arm64,amd64,"386"]
+        # darwin-arm/386 aren't valid or created platform architecture builds so they're excluded
+        exclude:
+          - platform_os_name: darwin
+            platform_arch_name: arm
+          - platform_os_name: darwin
+            platform_arch_name: "386"
+    env:
+      platform_os: ${{ matrix.platform_os_name }}
+      platform_arch: ${{ matrix.platform_arch_name }}
+    steps:
+      - name: Download assets
+        uses: actions/download-artifact@master
+        with:
+          name: files
+          path: release-files
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: release-files
+      - name: Get latest release of Repository
+        uses: rez0n/actions-github-release@main
+        id: latest-release
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "marcoa3/terraform-provider-scaffolding"
+          type: "stable"
+      - name: Set release version in env
         run: |
-          echo LINUX_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo LINUX_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo DARWIN_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo DARWIN_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo FREEBSD_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_AMD64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_ARM_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_ARM64_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-          echo WINDOWS_386_CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
-      - name: Test release SHASUM environment variable
+          RELEASE_VERSION=${{ steps.latest-release.outputs.release }}
+          echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
+      - name: Create release SHASUM (linux,windows,freebsd)
         run: |
-          echo "LINUX_AMD64_CHECKSUM: $LINUX_AMD64_CHECKSUM"
-          echo "LINUX_ARM_CHECKSUM: $LINUX_ARM_CHECKSUM"
-          echo "LINUX_ARM64_CHECKSUM: $LINUX_ARM64_CHECKSUM"
-          echo "LINUX_386_CHECKSUM: $LINUX_386_CHECKSUM"
-          echo "DARWIN_AMD64_CHECKSUM: $DARWIN_AMD64_CHECKSUM"
-          echo "DARWIN_ARM64_CHECKSUM: $DARWIN_ARM64_CHECKSUM"
-          echo "FREEBSD_AMD64_CHECKSUM: $FREEBSD_AMD64_CHECKSUM"
-          echo "FREEBSD_ARM_CHECKSUM: $FREEBSD_ARM_CHECKSUM"
-          echo "FREEBSD_ARM64_CHECKSUM: $FREEBSD_ARM64_CHECKSUM"
-          echo "FREEBSD_386_CHECKSUM: $FREEBSD_386_CHECKSUM"
-          echo "WINDOWS_AMD64_CHECKSUM: $WINDOWS_AMD64_CHECKSUM"
-          echo "WINDOWS_ARM_CHECKSUM: $WINDOWS_ARM_CHECKSUM"
-          echo "WINDOWS_ARM64_CHECKSUM: $WINDOWS_ARM64_CHECKSUM"
-          echo "WINDOWS_386_CHECKSUM: $WINDOWS_386_CHECKSUM"
+          echo CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_${{ matrix.platform_os_name }}_${{ matrix.platform_arch_name }}.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo "CHECKSUM for ${platform_os}-${platform_arch} is ${{ env.CHECKSUM }}"
       - name: Create provider platform and store output
         run: |
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o linux-amd64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
+          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o ${{ matrix.platform_os_name }}-${{ matrix.platform_arch_name }}.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
           {
             "data":{
                 "type":"registry-provider-version-platforms",
                 "attributes":{
-                  "os":"linux",
-                  "arch":"amd64",
-                  "shasum":"${{ env.LINUX_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip"
+                  "os":"${{ matrix.platform_os_name }}",
+                  "arch":"${{ matrix.platform_arch_name }}",
+                  "shasum":"${{ env.CHECKSUM }}",
+                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_${{ matrix.platform_os_name }}_${{ matrix.platform_arch_name }}.zip"
                 }
             }
           }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o linux-arm.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"linux",
-                  "arch":"arm",
-                  "shasum":"${{ env.LINUX_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o linux-arm64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"linux",
-                  "arch":"arm64",
-                  "shasum":"${{ env.LINUX_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o linux-386.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"linux",
-                  "arch":"386",
-                  "shasum":"${{ env.LINUX_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o darwin-amd64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"darwin",
-                  "arch":"amd64",
-                  "shasum":"${{ env.DARWIN_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o darwin-arm64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"darwin",
-                  "arch":"arm64",
-                  "shasum":"${{ env.DARWIN_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o freebsd-amd64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"freebsd",
-                  "arch":"amd64",
-                  "shasum":"${{ env.FREEBSD_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o freebsd-arm.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"freebsd",
-                  "arch":"arm",
-                  "shasum":"${{ env.FREEBSD_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o freebsd-arm64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"freebsd",
-                  "arch":"arm64",
-                  "shasum":"${{ env.FREEBSD_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o freebsd-386.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"freebsd",
-                  "arch":"386",
-                  "shasum":"${{ env.FREEBSD_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o windows-amd64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"windows",
-                  "arch":"amd64",
-                  "shasum":"${{ env.WINDOWS_AMD64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o windows-arm.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"windows",
-                  "arch":"arm",
-                  "shasum":"${{ env.WINDOWS_ARM_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o windows-arm64.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"windows",
-                  "arch":"arm64",
-                  "shasum":"${{ env.WINDOWS_ARM64_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip"
-                }
-            }
-          }
-          DATA
-          curl -X POST https://app.terraform.io/api/v2/organizations/$ORGANISATION_NAME/registry-providers/private/$ORGANISATION_NAME/$PROVIDER_NAME/versions/${{ env.RELEASE_VERSION }}/platforms -o windows-386.json -H "Content-Type: application/vnd.api+json" -H "Accept: application/vnd.api+json" -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" --data-binary @- <<DATA
-          {
-            "data":{
-                "type":"registry-provider-version-platforms",
-                "attributes":{
-                  "os":"windows",
-                  "arch":"386",
-                  "shasum":"${{ env.WINDOWS_386_CHECKSUM }}",
-                  "filename":"terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip"
-                }
-            }
-          }
-          DATA
       - name: Parse provider-binary-upload link as env variable
         run: |
-          echo "LINUX_AMD64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' linux-amd64.json)" >> $GITHUB_ENV
-          echo "LINUX_ARM_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' linux-arm.json)" >> $GITHUB_ENV
-          echo "LINUX_ARM64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' linux-arm64.json)" >> $GITHUB_ENV
-          echo "LINUX_386_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' linux-386.json)" >> $GITHUB_ENV
-          echo "DARWIN_AMD64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' darwin-amd64.json)" >> $GITHUB_ENV
-          echo "DARWIN_ARM64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' darwin-arm64.json)" >> $GITHUB_ENV
-          echo "FREEBSD_AMD64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' freebsd-amd64.json)" >> $GITHUB_ENV
-          echo "FREEBSD_ARM_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' freebsd-arm.json)" >> $GITHUB_ENV
-          echo "FREEBSD_ARM64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' freebsd-arm64.json)" >> $GITHUB_ENV
-          echo "FREEBSD_386_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' freebsd-386.json)" >> $GITHUB_ENV
-          echo "WINDOWS_AMD64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' windows-amd64.json)" >> $GITHUB_ENV
-          echo "WINDOWS_ARM_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' windows-arm.json)" >> $GITHUB_ENV
-          echo "WINDOWS_ARM64_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' windows-arm64.json)" >> $GITHUB_ENV
-          echo "WINDOWS_386_BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' windows-386.json)" >> $GITHUB_ENV
-      - name: Test BINARY_UPLOAD from file environment variable
-        run: |
-          echo "LINUX_AMD64_BINARY_UPLOAD: $LINUX_AMD64_BINARY_UPLOAD"
-          echo "LINUX_ARM_BINARY_UPLOAD: $LINUX_ARM_BINARY_UPLOAD"
-          echo "LINUX_ARM64_BINARY_UPLOAD: $LINUX_ARM64_BINARY_UPLOAD"
-          echo "LINUX_386_BINARY_UPLOAD: $LINUX_386_BINARY_UPLOAD"
-          echo "DARWIN_AMD64_BINARY_UPLOAD: $DARWIN_AMD64_BINARY_UPLOAD"
-          echo "DARWIN_ARM64_BINARY_UPLOAD: $DARWIN_ARM64_BINARY_UPLOAD"
-          echo "FREEBSD_AMD64_BINARY_UPLOAD: $FREEBSD_AMD64_BINARY_UPLOAD"
-          echo "FREEBSD_ARM_BINARY_UPLOAD: $FREEBSD_ARM_BINARY_UPLOAD"
-          echo "FREEBSD_ARM64_BINARY_UPLOAD: $FREEBSD_ARM64_BINARY_UPLOAD"
-          echo "FREEBSD_386_BINARY_UPLOAD: $FREEBSD_386_BINARY_UPLOAD"
-          echo "WINDOWS_AMD64_BINARY_UPLOAD: $WINDOWS_AMD64_BINARY_UPLOAD"
-          echo "WINDOWS_ARM_BINARY_UPLOAD: $WINDOWS_ARM_BINARY_UPLOAD"
-          echo "WINDOWS_ARM64_BINARY_UPLOAD: $WINDOWS_ARM64_BINARY_UPLOAD"
-          echo "WINDOWS_386_BINARY_UPLOAD: $WINDOWS_386_BINARY_UPLOAD"
+          echo "BINARY_UPLOAD=$(jq '.data.links."provider-binary-upload"' ${{ matrix.platform_os_name }}-${{ matrix.platform_arch_name }}.json)" >> $GITHUB_ENV
+          echo "BINARY_UPLOAD for ${platform_os}-${platform_arch} is ${{ env.BINARY_UPLOAD }}"
       - name: Upload platform binary to registry
         run: |
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_amd64.zip ${{ env.LINUX_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm.zip ${{ env.LINUX_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_arm64.zip ${{ env.LINUX_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_linux_386.zip ${{ env.LINUX_386_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_amd64.zip ${{ env.DARWIN_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_darwin_arm64.zip ${{ env.DARWIN_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_amd64.zip ${{ env.FREEBSD_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm.zip ${{ env.FREEBSD_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_arm64.zip ${{ env.FREEBSD_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_freebsd_386.zip ${{ env.FREEBSD_386_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_amd64.zip ${{ env.WINDOWS_AMD64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm.zip ${{ env.WINDOWS_ARM_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_arm64.zip ${{ env.WINDOWS_ARM64_BINARY_UPLOAD }}
-          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip ${{ env.WINDOWS_386_BINARY_UPLOAD }}
-      # delete-artifact
+          curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_${{ matrix.platform_os_name }}_${{ matrix.platform_arch_name }}.zip ${{ env.BINARY_UPLOAD }}
+  cleanup:
+    needs: publish-to-private-registry
+    runs-on: ubuntu-latest
+    steps:
+     # delete-artifact
       - name: Remove downloaded assets
         uses: geekyeggo/delete-artifact@v1
         with:
           name: files
-
