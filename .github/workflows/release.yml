@@ -163,7 +163,7 @@ jobs:
           echo "RELEASE_VERSION=${RELEASE_VERSION:1}" >> $GITHUB_ENV
       - name: Create release SHASUM (linux,windows,freebsd)
         run: |
-          echo CHECKSUM="$(shasum release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_${{ matrix.platform_os_name }}_${{ matrix.platform_arch_name }}.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
+          echo CHECKSUM="$(shasum -a 256 release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_${{ matrix.platform_os_name }}_${{ matrix.platform_arch_name }}.zip | awk '{ print $1 }')" >> "$GITHUB_ENV"
           echo "CHECKSUM for ${platform_os}-${platform_arch} is ${{ env.CHECKSUM }}"
       - name: Create provider platform and store output
         run: |
