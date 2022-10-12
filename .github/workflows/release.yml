@@ -391,7 +391,7 @@ jobs:
           curl -T release-files/terraform-provider-${{ env.PROVIDER_NAME }}_${{ env.RELEASE_VERSION }}_windows_386.zip ${{ env.WINDOWS_386_BINARY_UPLOAD }}
       # delete-artifact
       - name: Remove downloaded assets
-        uses: geekyeggo/delete-artifact@v1
+        uses: geekyeggo/delete-artifact@v2
         with:
           name: files
 
